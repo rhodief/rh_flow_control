@@ -1,17 +1,21 @@
 from ast import List
 import unittest
 from rh_flow_control.controls import STATUS_TYPE, DataStore, ExecutionControl, Transporter
-from rh_flow_control.flow_control import Chain, Execute, Flow
+from rh_flow_control.flow_control import Chain, Execute, Flow, Stream
+from  collections.abc import Iterable
 
 ### Functions
 def load(_d, _ds, _lg, _fc):
     return [0, 1, 2, 3, 4, 5]
+
 class MathOperation():
-    def __init__(self, op:str, n: int) -> None:
+    def __init__(self, op:str, n: int, isIter = True) -> None:
         self._number = n
         self._op = op
+        self.is_iter = isIter
     def __call__(self, _d, _ds, _lg, _fc) -> List(int):
-        return [self._operation(self._op, n, self._number) for n in _d]
+        if self.is_iter: return [self._operation(self._op, n, self._number) for n in _d]
+        return self._operation(self._op, _d, self._number)
     def _operation(self, op: str, n1, n2):
         if op == 'add': return n1 + n2
         if op == 'sub': return n1 - n2
@@ -89,7 +93,7 @@ class TestTransporterClass(unittest.TestCase):
     Transporter
     '''
     def setUp(self) -> None:
-        execution_control = ExecutionControl(Flow)
+        execution_control = ExecutionControl()
         data_store = DataStore()
         self._transporter = Transporter(execution_control, data_store)
     def test_instantiate_with_no_value(self):
@@ -111,6 +115,20 @@ class TestTransporterClass(unittest.TestCase):
         transporter = self._transporter
         transporter.setStatus(STATUS_TYPE.NO_EXEC)
         self.assertEqual(str(transporter.status.name), 'NO_EXEC')
+    def test_clone_iterables_check_iterable(self):
+        '''
+        Transporter: Check if clone for iterable 
+        '''
+        transporter = self._transporter
+        transporter.receive_data(123)
+        with self.assertRaises(AssertionError):
+            transporter.clone_for_iterable()
+        
+        transporter.receive_data([0, 1, 2, 3, 4, 5])
+        transporter_clones = transporter.clone_for_iterable()
+        self.assertIsInstance(transporter_clones[0], Transporter)
+        self.assertEqual(transporter_clones[1].data(), 1)   
+  
         
 
 ### FLOW_CONTROL CLASSES
@@ -120,7 +138,7 @@ class TestChainClass(unittest.TestCase):
     '''
     def test_math_operations(self):
         '''
-        Call Chain Articulator: Test math operation over a list of integers
+        Call Chain Articulator: Test math operation over a list of integers        
         '''
         chain = Chain(
                     Execute(load),
@@ -132,8 +150,24 @@ class TestChainClass(unittest.TestCase):
             Flow(chain).run(),
             [14, 16, 18, 20, 22, 24]
         )
-
+        
+        
+class TestStreamClass(unittest.TestCase):
+    '''
+    Call Stream Articulator: Test math operation over a list of integers
+    '''
     
+    def test_math_operation_for_stream(self):
+        stream = Stream(
+            Execute(MathOperation('add', 5, False)),
+            Execute(MathOperation('sub', 2, False)),
+            Execute(MathOperation('mult', 3, False))
+        )
+        chain = Chain(Execute(load))
+        self.assertEqual(
+            Flow(chain, stream).run(),
+            [9, 12, 15, 18, 21, 24]
+        )
 
 if __name__ == '__main__':
     unittest.main()

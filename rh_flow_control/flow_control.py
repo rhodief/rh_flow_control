@@ -42,7 +42,18 @@ class Stream(Articulator):
     '''
     It calls each item of iterator to pass through all articulators and it collects all of them in the end.
     '''
-    pass
+    def __call__(self, transporter: Transporter):
+        transporter.execution_control().check_in(self)
+        transporter_clones = transporter.clone_for_iterable()
+        new_clones = []
+        for transporter_clone in transporter_clones:
+            new_transporter = transporter_clone    
+            for articulator in self._articulators:
+                new_transporter = articulator(new_transporter)
+            new_clones.append(new_transporter)
+        transporter.recompose(new_clones)            
+        transporter.execution_control().check_out(self)
+        return transporter
 
 class ParallelStream(Articulator):
     '''
