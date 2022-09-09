@@ -72,17 +72,26 @@ class CurrentExecution:
     def set_execution(self, index: IndexControl, node: TreeNode):
         i = index.getIndex()
         self._current[i] = TreeNode(i, node.name, node.getType)
-        self._e_logger.log(self._current[i])
+        #self._log_action()
     def remove_execution(self, index: IndexControl):
         i = index.getIndex()
+        #self._log_action()
         if i in self._current:
             del self._current[index.getIndex()]
     def get_execution(self, index: IndexControl) -> TreeNode:
         return self._current.get(index.getIndex(), None)
+    def set_start_time(self, index: IndexControl):
+        self.get_execution(index).set_start_time(datetime.now())
+        self._log_action()
+    def set_end_time(self, index: IndexControl):
+        self.get_execution(index).set_end_time(datetime.now())
+        self._log_action()
     def get_all_executions(self):
         return self._current
     def to_dict(self):
         return {k: v.to_dict() for k, v in self._current.items()}
+    def _log_action(self):
+        self._e_logger.log({k: v.to_dict() for k, v in self._current.items()})
 
 '''
 class ExecutionTree:
@@ -148,13 +157,15 @@ class ExecutionControl:
         '''
         When an execution starts
         '''
-        self._current_execution.get_execution(self._index).set_start_time(datetime.now())
+        self._current_execution.set_start_time(self._index)
+        
         
     def end_exec(self):
         '''
         When an execution ends
         '''
-        self._current_execution.get_execution(self._index).set_end_time(datetime.now())
+        self._current_execution.set_end_time(self._index)
+        #print(self._index.getIndex(), self._current_execution.get_execution(self._index).to_dict(), 'primeiro')
         
 class DataStore:
     pass
