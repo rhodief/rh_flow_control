@@ -1,6 +1,7 @@
 from logging import Logger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from collections.abc import Callable
+from unittest import result
 from rh_flow_control.default import DefaultDataFlow
 
 from rh_flow_control.model import Articulator
@@ -81,7 +82,19 @@ class Parallel(Articulator):
     '''
     Each articulator becomes a branch to parallel execution
     '''
-    pass
+    def __call__(self, transporter: Transporter):
+        transporter.execution_control().check_in(self)
+        n_branches = len(self._articulators)
+        transporter_clones = transporter.clone(n_branches)
+        branch_zip = zip(self._articulators, transporter_clones)
+        def parallel_task(zip_articulators_transporter: Tuple[Articulator, Transporter], _ = None):
+            articulator_task, transporter_task = zip_articulators_transporter
+            print(transporter_task.data(), articulator_task.name)
+            return articulator_task(transporter_task)
+        result_transporters = RhThreads(parallel_task, branch_zip).run()
+        transporter.recompose(result_transporters)
+        transporter.execution_control().check_out(self)
+        return transporter
 
 class Flow():
     '''

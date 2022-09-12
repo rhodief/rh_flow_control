@@ -3,6 +3,7 @@ from ast import List
 from enum import Enum
 from typing import Any, Dict, Iterable
 from datetime import datetime
+import copy
 
 from rh_flow_control.output import ELogger, FlowLogger, SuperLogger
 
@@ -21,6 +22,9 @@ class IndexControl:
         if len(self._index) < 1: self._index = [-1]
         self._index[-1] += 1
         return self
+    def set_last_index(self, n_index = -1):
+        if len(self._index) < 1: self._index = [-1]
+        self._index[-1] = n_index
     def new_child_branch(self, index = -1):
         self._index.append(index)
         return self
@@ -228,9 +232,19 @@ class Transporter:
             new_transporter.setStatus(self._status)
             transporters.append(new_transporter)
         return transporters
+    def clone(self, number: int):
+        transporters = []
+        for c in range(number):
+            new_index_control = self.execution_control().getIndex().clone()
+            new_index_control.set_last_index(c -1) ## The increment occour on check-in at the child node
+            execution_control = self._execution_control.clone(new_index_control)
+            new_transporter = Transporter(execution_control=execution_control, data_store=self._data_store, data=copy.deepcopy(self._data))
+            new_transporter.setStatus(self._status)
+            transporters.append(new_transporter)
+        return transporters
     def recompose(self, transporters: List(Any)):
         self.execution_control().getIndex().clone(None, None)
-        self._data = [trans.data() for trans in transporters]        
+        self._data = [trans.data() for trans in transporters]
         
             
             

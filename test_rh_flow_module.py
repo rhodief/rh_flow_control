@@ -1,4 +1,5 @@
 from ast import List
+from asyncio import transports
 import unittest
 from rh_flow_control.controls import STATUS_TYPE, DataStore, ExecutionControl, Transporter
 from rh_flow_control.flow_control import Chain, Execute, Flow, Stream
@@ -127,7 +128,17 @@ class TestTransporterClass(unittest.TestCase):
         transporter.receive_data([0, 1, 2, 3, 4, 5])
         transporter_clones = transporter.clone_for_iterable()
         self.assertIsInstance(transporter_clones[0], Transporter)
-        self.assertEqual(transporter_clones[1].data(), 1)   
+        self.assertEqual(transporter_clones[1].data(), 1)
+    def test_clone_by_number(self):
+        '''
+        Transporter: Check clone by numbers
+        '''
+        transporter = self._transporter
+        transporter.receive_data([0, 1, 2, 3, 4, 5])
+        transporter_clones = transporter.clone(3)
+        self.assertIsInstance(transporter_clones[0], Transporter)
+        self.assertEqual(transporter_clones[1].data(), [0, 1, 2, 3, 4, 5])
+        
   
         
 
