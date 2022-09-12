@@ -53,7 +53,7 @@ class SimplePrintWorkerAdapter(ExposingWorkerPort):
     def __call__(self, broker) -> Any:
         while True:
             item = broker.get()
-            print(item['msg'])
+            #print(item['msg'])
             broker.done()
             
         

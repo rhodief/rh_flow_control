@@ -13,7 +13,7 @@ class RhThreads():
     def run(self):
         with  ThreadPoolExecutor() as executor:
             futures = [executor.submit(self._task_callable,transporter, self._articulators) for transporter in self._transporters]
-            return [future.result() for future in as_completed(futures)]
+            return [future.result() for future in futures]
                 
     
         

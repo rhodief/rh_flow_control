@@ -1,4 +1,4 @@
-from ast import List
+from typing import List
 from rh_flow_control.controls import Transporter
 from rh_flow_control.flow_control import Chain, Execute, Flow, Parallel, ParallelStream, Stream
 import time
@@ -14,7 +14,7 @@ class MathOperation():
         self._number = n
         self._op = op
         self._is_iter = is_iter
-    def __call__(self, _d, _ds, _lg, _fc) -> List(int):
+    def __call__(self, _d, _ds, _lg, _fc) -> List[int]:
         time.sleep(1)
         if self._is_iter: return [self._operation(self._op, n, self._number) for n in _d]
         return self._operation(self._op, _d, self._number)

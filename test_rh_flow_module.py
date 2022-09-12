@@ -2,7 +2,7 @@ from ast import List
 from asyncio import transports
 import unittest
 from rh_flow_control.controls import STATUS_TYPE, DataStore, ExecutionControl, Transporter
-from rh_flow_control.flow_control import Chain, Execute, Flow, Stream
+from rh_flow_control.flow_control import Chain, Execute, Flow, Parallel, ParallelStream, Stream
 from  collections.abc import Iterable
 
 ### Functions
@@ -178,6 +178,41 @@ class TestStreamClass(unittest.TestCase):
         self.assertEqual(
             Flow(chain, stream).run(),
             [9, 12, 15, 18, 21, 24]
+        )
+        
+class TestParallelStreamClass(unittest.TestCase):
+    def test_math_operation_for_parallel_stream(self):
+        chain = Chain(Execute(load))
+        stream = ParallelStream(
+            Execute(MathOperation('add', 10, False)),
+            Execute(MathOperation('sub', 3, False)),
+            Execute(MathOperation('mult', 2, False))
+        )
+        chain = Chain(Execute(load))
+        self.assertEqual(
+            Flow(chain, stream).run(),
+            [14, 16, 18, 20, 22, 24]
+        )
+class TestParallelClass(unittest.TestCase):
+    def test_math_opration_for_parallel(self):
+        main_chain = Chain(Execute(load))
+        chain = Chain(
+            Execute(MathOperation('add', 10)),
+            Execute(MathOperation('sub', 3)),
+            Execute(MathOperation('mult', 2))
+        )
+        stream = ParallelStream(
+            Execute(MathOperation('add', 5, False)),
+            Execute(MathOperation('sub', 2, False)),
+            Execute(MathOperation('mult', 3, False))
+        )
+        parallel = Parallel(
+            chain,
+            stream
+        )
+        self.assertEqual(
+            Flow(main_chain,parallel).run(),
+            [[14, 16, 18, 20, 22, 24], [9, 12, 15, 18, 21, 24]]
         )
 
 if __name__ == '__main__':
