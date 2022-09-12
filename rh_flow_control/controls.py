@@ -28,7 +28,10 @@ class IndexControl:
         self._index.pop()
         return self
     def getIndex(self) -> str:
-        return '.'.join([str(i) for i in self._index])
+        new_string =  '.'.join([str(i) for i in self._index])
+        if self._iter_index:
+            new_string = f'{new_string}-{self._iter_index}'
+        return new_string
     def clone(self, iter_index = None, iter_total = None, preserve_iter_index = False):
         new_index = [*self._index]
         if preserve_iter_index:
@@ -97,7 +100,8 @@ class CurrentExecution:
         i = index.getIndex()
         #self._log_action()
         if i in self._current:
-            del self._current[index.getIndex()]
+            del self._current[i]
+            #pass
     def get_execution(self, index: IndexControl) -> TreeNode:
         return self._current.get(index.getIndex(), None)
     def set_start_time(self, index: IndexControl):

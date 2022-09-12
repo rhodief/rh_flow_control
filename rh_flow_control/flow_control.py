@@ -1,9 +1,10 @@
 from logging import Logger
-from typing import Any, Dict
+from typing import Any, Dict, List
 from collections.abc import Callable
 from rh_flow_control.default import DefaultDataFlow
 
 from rh_flow_control.model import Articulator
+from rh_flow_control.threads_control import RhThreads
 
 from .controls import STATUS_TYPE, Transporter, ExecutionControl, DataStore
 
@@ -60,7 +61,21 @@ class ParallelStream(Articulator):
     Same of Stream, but it runs in parallel (threads)
     
     '''
-    pass
+    def __call__(self, transporter: Transporter):
+        transporter.execution_control().check_in(self)
+        transporter_clones = transporter.clone_for_iterable()
+        def parallel_task(task_transporter: Transporter, task_articulators: List[Articulator]):
+            new_transporter = task_transporter
+            for articulator in task_articulators:
+                new_transporter = articulator(new_transporter)
+            return new_transporter
+        result_transporters = RhThreads(parallel_task, transporter_clones, self._articulators).run()
+        transporter.recompose(result_transporters)
+        transporter.execution_control().check_out(self)
+        return transporter
+        
+        
+        
 
 class Parallel(Articulator):
     '''

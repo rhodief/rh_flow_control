@@ -1,6 +1,6 @@
 from ast import List
 from rh_flow_control.controls import Transporter
-from rh_flow_control.flow_control import Chain, Execute, Flow, Stream
+from rh_flow_control.flow_control import Chain, Execute, Flow, ParallelStream, Stream
 import time
 from random import randint
 
@@ -35,12 +35,23 @@ chain = Chain(
     )
 
 '''
+
+'''
 chain = Chain(Execute(load))
 stream = Stream(
     Execute(MathOperation('add', 10, False)),
     Execute(MathOperation('sub', 3, False)),
     Execute(MathOperation('mult', 2, False))
 )
+'''
+chain = Chain(Execute(load))
+stream = ParallelStream(
+    Execute(MathOperation('add', 10, False)),
+    Execute(MathOperation('sub', 3, False)),
+    Execute(MathOperation('mult', 2, False))
+)
+
+
 
 
 
