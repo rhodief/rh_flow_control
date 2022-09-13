@@ -178,10 +178,10 @@ class ExecutionControl:
         '''
         When transporter leaves a Node
         '''
-        self._current_execution.remove_execution(self._index)
         node_type = articulator.type
         if node_type != 'Execute':
             self._index.kill_child_branch()
+        self._current_execution.remove_execution(self._index)
         
     def start_exec(self):
         '''
