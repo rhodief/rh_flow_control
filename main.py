@@ -76,7 +76,7 @@ parallel = Parallel(
 
 
 #f = Flow(chain, stream).run()
-f = Flow(main_chain, parallel).run()
+f = Flow(main_chain, parallel).analyze().get_nodes()
 
 print('Resultado', f)
 

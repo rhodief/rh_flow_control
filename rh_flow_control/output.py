@@ -1,5 +1,4 @@
 from enum import Enum
-from pyclbr import Function
 from queue import Queue
 from enum import Enum
 import threading
@@ -53,7 +52,8 @@ class SimplePrintWorkerAdapter(ExposingWorkerPort):
     def __call__(self, broker) -> Any:
         while True:
             item = broker.get()
-            print(item['msg'])
+            msg = item['msg']
+            print(f'Mensagem: ', msg)
             broker.done()
             
         

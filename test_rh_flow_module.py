@@ -24,6 +24,8 @@ class MathOperation():
         if op == 'div': return n1 / n2
         raise Exception('Invalid Operator')
 
+
+
 ## CONTROLS CLASSES
 class TestExecutionControlClass(unittest.TestCase):
     '''
@@ -67,15 +69,15 @@ class TestExecutionControlClass(unittest.TestCase):
         self.assertEqual(len(self.execution_control.current_execution().to_dict()), 1)
         self.execution_control.check_out(Chain())
         self.execution_control.check_in(Chain())
-        self.assertEqual(len(self.execution_control.current_execution().to_dict()), 2) ## Add a placehold for the child
-        self.execution_control.check_in(Execute(lambda x: 1))
-        self.execution_control.check_out(Execute(lambda x: 1))
-        self.execution_control.check_in(Execute(lambda x: 1))
-        self.assertEqual(len(self.execution_control.current_execution().to_dict()), 3) ## Add a placehold for the child
-        self.execution_control.check_out(Execute(lambda x: 1))
-        self.execution_control.check_out(Chain())
-        self.execution_control.check_out(Chain())
         self.assertEqual(len(self.execution_control.current_execution().to_dict()), 1) ## Add a placehold for the child
+        self.execution_control.check_in(Execute(lambda x: 1))
+        self.execution_control.check_out(Execute(lambda x: 1))
+        self.execution_control.check_in(Execute(lambda x: 1))
+        self.assertEqual(len(self.execution_control.current_execution().to_dict()), 2) ## Add a placehold for the child
+        self.execution_control.check_out(Execute(lambda x: 1))
+        self.execution_control.check_out(Chain())
+        self.execution_control.check_out(Chain())
+        self.assertEqual(len(self.execution_control.current_execution().to_dict()), 0) ## Add a placehold for the child
     def test_time_execution(self):
         '''
         ExecutionControl: CurrentExecution - Delta Time Execution
@@ -87,7 +89,7 @@ class TestExecutionControlClass(unittest.TestCase):
         self.assertLessEqual(self.execution_control.current_execution().get_execution(self.execution_control.getIndex()).delta_time, 0.01)
         
 
-      
+
     
 class TestTransporterClass(unittest.TestCase):
     '''
@@ -214,6 +216,34 @@ class TestParallelClass(unittest.TestCase):
             Flow(main_chain,parallel).run(),
             [[14, 16, 18, 20, 22, 24], [9, 12, 15, 18, 21, 24]]
         )
+        
+class TestAnalyzeClass(unittest.TestCase):
+    def test_analyze_execution_tree(self):
+        '''
+        Execution Tree: Test dict returned
+        '''
+        main_chain = Chain(Execute(load))
+        chain = Chain(
+            Execute(MathOperation('add', 10)),
+            Execute(MathOperation('sub', 3)),
+            Execute(MathOperation('mult', 2))
+        )
+        stream = ParallelStream(
+            Execute(MathOperation('add', 10, False)),
+            Execute(MathOperation('sub', 3, False)),
+            Execute(MathOperation('mult', 2, False))
+        )
+        parallel = Parallel(
+            chain,
+            stream
+        )
+        
+        self.assertEqual(
+            Flow(main_chain, parallel).analyze().get_nodes(), 
+            [{'index': '0', 'name': 'Chain', 'type': 'Chain'}, {'index': '0.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1', 'name': 'Parallel', 'type': 'Parallel'}, {'index': '1.0', 'name': 'Chain', 'type': 'Chain'}, {'index': '1.0.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.0.1', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.0.2', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1', 'name': 'ParallelStream', 'type': 'ParallelStream'}, {'index': '1.1.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1.1', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1.2', 'name': 'Execute', 'type': 'Execute'}]
+            )
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,10 +4,10 @@ from collections.abc import Callable
 from unittest import result
 from rh_flow_control.default import DefaultDataFlow
 
-from rh_flow_control.model import Articulator
+from rh_flow_control.model import Articulator, ExecutionTree
 from rh_flow_control.threads_control import RhThreads
 
-from .controls import STATUS_TYPE, Transporter, ExecutionControl, DataStore
+from .controls import STATUS_TYPE, IndexControl, Transporter, ExecutionControl, DataStore
 
 
 
@@ -25,8 +25,14 @@ class Execute(Articulator):
             transporter.execution_control().start_exec()
             transporter.receive_data(self._callable(*transporter.deliver(), **self._params))
             transporter.execution_control().end_exec()
-        transporter.execution_control().check_out(self)
+            transporter.execution_control().check_out(self)
         return transporter
+    def analyze(self, index_control: IndexControl, tree: ExecutionTree):
+        index_control.next()
+        node_type = self.type
+        tree.add_node(index_control.getIndex(), self.name, node_type)
+        return tree
+    
 
     
 class Chain(Articulator):
@@ -118,6 +124,12 @@ class Flow():
         self._super_printer.block()
         self._transporter.setStatus(STATUS_TYPE.IDLE)
         return self._transporter.data()
+    def analyze(self):
+        index_control = IndexControl()
+        tree = ExecutionTree()
+        for art in self._articulators:
+            art.analyze(index_control, tree)
+        return tree
         
     def _flow_execution(self) -> Transporter:
         for articulator in self._articulators:
