@@ -22,6 +22,8 @@ class Articulator():
         self._articulators = articulators
         self._name = None
     def configs(self, name: str = ''):
+        if not isinstance(name,(str, int)): raise TypeError('Only str or int is allowed as articulator name')
+        self._name = name
         return self
     @property
     def name(self):
