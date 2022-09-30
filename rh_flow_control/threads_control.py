@@ -11,7 +11,7 @@ class RhThreads():
         self._transporters = transporters
         self._articulators = articulators
     def run(self):
-        with  ThreadPoolExecutor() as executor:
+        with  ThreadPoolExecutor(max_workers=self._n_workers) as executor:
             futures = [executor.submit(self._task_callable,transporter, self._articulators) for transporter in self._transporters]
             return [future.result() for future in futures]
                 
