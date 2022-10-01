@@ -8,8 +8,8 @@ class DefaultDataFlow:
         super_logger = SuperLogger(self.broker)
         flow_logger = FlowLogger(super_logger)
         return flow_logger
-    def printers(self):
+    def printers(self, newPrinterAdapter = None):
         ## Printers
-        printer_worker = SimplePrintWorkerAdapter()
+        printer_worker = newPrinterAdapter if newPrinterAdapter else SimplePrintWorkerAdapter()
         return SuperPrinter(self.broker, printer_worker)
 
