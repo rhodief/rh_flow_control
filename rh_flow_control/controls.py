@@ -119,7 +119,8 @@ class CurrentExecution:
     def to_dict(self):
         return {k: v.to_dict() for k, v in self._current.items()}
     def _log_action(self):
-        self._e_logger.log({k: v.to_dict() for k, v in self._current.items()})
+        items = {**self._current}
+        self._e_logger.log({k: v.to_dict() for k, v in items.items()})
 
 '''
 class ExecutionTree:
