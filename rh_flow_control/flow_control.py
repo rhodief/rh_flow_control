@@ -68,6 +68,14 @@ class ParallelStream(Articulator):
     Same of Stream, but it runs in parallel (threads)
     
     '''
+    def __init__(self, *articulators):
+        super().__init__(*articulators)
+        self._max_workers = 10
+    def configs(self, name: str = '', max_workers = 10):
+        self._max_workers = max_workers
+        return super().configs(name = name)
+        
+
     def __call__(self, transporter: Transporter):
         transporter.execution_control().check_in(self)
         transporter_clones = transporter.clone_for_iterable()
@@ -76,7 +84,7 @@ class ParallelStream(Articulator):
             for articulator in task_articulators:
                 new_transporter = articulator(new_transporter)
             return new_transporter
-        result_transporters = RhThreads(parallel_task, transporter_clones, self._articulators).run()
+        result_transporters = RhThreads(parallel_task, transporter_clones, self._articulators, n_workers=self._max_workers).run()
         transporter.recompose(result_transporters)
         transporter.execution_control().check_out(self)
         return transporter
@@ -88,6 +96,13 @@ class Parallel(Articulator):
     '''
     Each articulator becomes a branch to parallel execution
     '''
+    def __init__(self, *articulators):
+        super().__init__(*articulators)
+        self._max_workers = 10
+    def configs(self, name: str = '', max_workers = 10):
+        self._max_workers = max_workers
+        return super().configs(name = name)
+        
     def __call__(self, transporter: Transporter):
         transporter.execution_control().check_in(self)
         n_branches = len(self._articulators)
@@ -97,7 +112,7 @@ class Parallel(Articulator):
             articulator_task, transporter_task = zip_articulators_transporter
             print(transporter_task.data(), articulator_task.name)
             return articulator_task(transporter_task)
-        result_transporters = RhThreads(parallel_task, branch_zip).run()
+        result_transporters = RhThreads(parallel_task, branch_zip, n_workers=self._max_workers).run()
         transporter.recompose(result_transporters)
         transporter.execution_control().check_out(self)
         return transporter
