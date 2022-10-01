@@ -67,7 +67,6 @@ class SuperPrinter():
         self._thread = threading.Thread(target=exposingWorker, args=(self._broker,), daemon=True)        
     def watch(self):
         self._thread.start()
-        pass
     def block(self):
         self._broker.block()
     
