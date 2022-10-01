@@ -2,8 +2,10 @@ from ast import List
 from asyncio import transports
 import unittest
 from rh_flow_control.controls import STATUS_TYPE, DataStore, ExecutionControl, Transporter
+from rh_flow_control.default import DefaultDataFlow
 from rh_flow_control.flow_control import Chain, Execute, Flow, Parallel, ParallelStream, Stream
-from  collections.abc import Iterable
+from rh_flow_control.model import Articulator
+from rh_flow_control.output import ILogger
 
 ### Functions
 def load(_d, _ds, _lg, _fc):
@@ -142,6 +144,22 @@ class TestTransporterClass(unittest.TestCase):
         self.assertEqual(transporter_clones[1].data(), [0, 1, 2, 3, 4, 5])
         
   
+#### MODEL Classes
+class TestArticulatorClass(unittest.TestCase):
+    def setUp(self) -> None:
+            self.articulator = Articulator([])
+        
+    def test_name_assing(self):
+        '''
+        Articulator: Check name assign
+        '''
+        name = "Nome Teste"
+        self.articulator.configs(name = name)
+        self.assertEqual(self.articulator.name, name)
+    def test_allow_only_str_and_int_as_name(self):
+        with self.assertRaises(TypeError):
+            obj = {'teste': 'um'}
+            self.articulator.configs(name=obj)
         
 
 ### FLOW_CONTROL CLASSES
@@ -242,6 +260,32 @@ class TestAnalyzeClass(unittest.TestCase):
             Flow(main_chain, parallel).analyze().get_nodes(), 
             [{'index': '0', 'name': 'Chain', 'type': 'Chain'}, {'index': '0.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1', 'name': 'Parallel', 'type': 'Parallel'}, {'index': '1.0', 'name': 'Chain', 'type': 'Chain'}, {'index': '1.0.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.0.1', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.0.2', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1', 'name': 'ParallelStream', 'type': 'ParallelStream'}, {'index': '1.1.0', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1.1', 'name': 'Execute', 'type': 'Execute'}, {'index': '1.1.2', 'name': 'Execute', 'type': 'Execute'}]
             )
+        
+        
+#### Output
+class TestOuputMessage(unittest.TestCase):
+    def setUp(self) -> None:
+        defaultDataFlow = DefaultDataFlow()
+        self.flow_logger = defaultDataFlow.loggers()
+        self.super_printer = defaultDataFlow.printers()
+        self.exec_logger_message = 'Exec Logger Running...'
+        self.user_logger_message = 'User Logger Running...'
+        self.status = False
+    def message_execution(self, logger: ILogger, base_message: str):
+        for log_test in range(10):
+            logger.log(f'{log_test} {base_message}')    
+    def test_exec_logger_sending_and_receiving_message(self):
+        '''
+        Exec Loggin: Test sending and receiving messages - Test only intances
+        '''
+        exec_logger = self.flow_logger.exec_logger
+        self.super_printer.watch()
+        self.message_execution(exec_logger, self.exec_logger_message)
+        self.super_printer.block()
+        return False
+        
+    
+        
 
 
 
