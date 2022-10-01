@@ -2,6 +2,12 @@
 from rh_flow_control.controls import IndexControl, Transporter
 import copy
 
+class CallableModel():
+      def __call__(self, data, data_store, execute_control, logger):
+          ''' implementar o método .... '''
+          raise NotImplementedError('Method not implemented: CallableModel.__call__()')
+
+
 class ExecutionTree():
     def __init__(self) -> None:
         self._nodes = []
@@ -21,7 +27,7 @@ class Articulator():
     def __init__(self, *articulators):
         self._articulators = articulators
         self._name = None
-    def configs(self, name: str = ''):
+    def configs(self, name: str = None):
         if not isinstance(name,(str, int)): raise TypeError('Only str or int is allowed as articulator name')
         self._name = name
         return self
